@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>PaperTrail</h1>
+<form method="POST">
+    <input type="text" name="query" placeholder="Search papers..." value="{{ query or '' }}">
+    <button type="submit">Search</button>
+</form>
+
+{% if results %}
+  <h3>Results</h3>
+  <ul>
+  {% for paper in results %}
+    <li>
+      <strong>{{ paper.title }}</strong><br>
+      <em>{{ paper.authors }}</em><br>
+      <form method="POST" action="{{ url_for('library.add_to_library') }}">
+        <input type="hidden" name="title" value="{{ paper.title }}">
+        <input type="hidden" name="authors" value="{{ paper.authors }}">
+        <input type="hidden" name="doi" value="{{ paper.doi }}">
+        <input type="hidden" name="url" value="{{ paper.url }}">
+        <button type="submit">Add to Library</button>
+      </form>
+    </li>
+  {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}
