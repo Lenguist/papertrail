@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+*.egg
+*.log
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+papertrail_env/
+.idea/
+.vscode/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Flask / local builds
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Supabase / Railway configs
+.env
+.env.local
+.env.*.local
+
+# Migrations cache
+migrations/
+alembic/
+
+# Testing / coverage
+.coverage
+htmlcov/
+.pytest_cache/
