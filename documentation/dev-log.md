@@ -15,3 +15,9 @@ I then asked chatgpt if smth similar exists, and it basically doesn't. There are
 Gonna aim to buildv1 of mvp today and push it out. 
 
 Another thought: rn there is also heavily missing a good engine for paper discovery. Twitter is kind of like that, nad citations, and semantic scholar and conferences and so on, but there def can be more.
+
+Oct 25 17:54 came back to work on this. Trying to test this very simple version and make sure all the connections work (supabase, railway).
+
+Rn hvaing some problems with supabase, once I figure them out and figure out railway i will be happy with my progress for the day.
+
+Yay! connected to supabase and created the tables. it was jjust a fat finger error on my part, i forgot to click the reset password button.
