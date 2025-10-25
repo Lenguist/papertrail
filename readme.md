@@ -1,0 +1,1 @@
+This is PaperTrail, a social reading platform for papers. (goodreads for papers)
