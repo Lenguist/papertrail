@@ -12,6 +12,10 @@ itsdangerous @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/a
 Jinja2 @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_2cnn4kenrm/croot/jinja2_1741710859444/work
 MarkupSafe @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_1f_uj4vxik/croot/markupsafe_1738584045311/work
 packaging==25.0
+psycopg==3.2.11
+psycopg-binary==3.2.11
+psycopg-pool==3.2.6
+psycopg2-binary==2.9.9
 pycparser @ file:///opt/miniconda3/conda-bld/pycparser_1757496094255/work
 PySocks @ file:///Users/ktietz/ci_310/pysocks_1643961536721/work
 python-dotenv==1.1.1
