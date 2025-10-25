@@ -1,6 +1,22 @@
 {% extends "base.html" %}
-{% block title %}Library{% endblock %}
+{% block title %}Your Library{% endblock %}
 {% block content %}
-  <h2>Your Paper Library</h2>
-  <p>No papers yet.</p>
+<h2>Your Paper Library</h2>
+
+<ul>
+  {% for paper in papers %}
+    <li>
+      <a href="{{ paper.url or '#' }}">{{ paper.title }}</a><br>
+      <small>{{ paper.authors }}</small>
+    </li>
+  {% else %}
+    <li>No papers yet.</li>
+  {% endfor %}
+</ul>
+
+<hr>
+<form method="GET" action="/library/search">
+  <input type="text" name="q" placeholder="Search for papers...">
+  <button type="submit">Search</button>
+</form>
 {% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Search Results{% endblock %}
+{% block content %}
+<h2>Search results for "{{ query }}"</h2>
+
+{% if results %}
+  <ul>
+    {% for paper in results %}
+      <li>
+        <strong>{{ paper.title }}</strong><br>
+        <small>{{ paper.authors }}</small><br>
+        <form method="POST" action="/library/">
+          <input type="hidden" name="title" value="{{ paper.title }}">
+          <input type="hidden" name="authors" value="{{ paper.authors }}">
+          <input type="hidden" name="doi" value="{{ paper.doi }}">
+          <input type="hidden" name="url" value="{{ paper.url }}">
+          <button type="submit">Add to Library</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No results found.</p>
+{% endif %}
+{% endblock %}
