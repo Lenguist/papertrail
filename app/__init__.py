@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 # Load environment variables from .env at project root
 load_dotenv()
 
-# Extensions and config
+# Import extensions and config
 from .extensions import db, init_supabase
 from .config import Config
 
@@ -20,8 +20,6 @@ from .routes.auth import auth_bp
 def create_app():
     """Flask application factory."""
     app = Flask(__name__)
-
-    # Load configuration from Config class
     app.config.from_object(Config)
 
     # Verify environment variable loaded correctly (optional)
@@ -31,11 +29,11 @@ def create_app():
     else:
         print(f"✅ Connected using DATABASE_URL: {db_url.split('@')[-1]}")
 
-    # Initialize extensions
+    # Initialize core services
     db.init_app(app)
-    init_supabase(app)
+    init_supabase(app)  # <-- ensure Supabase client is ready before routes
 
-    # Register blueprints
+    # Register Blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(library_bp, url_prefix="/library")
     app.register_blueprint(auth_bp, url_prefix="/auth")
