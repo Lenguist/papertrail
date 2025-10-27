@@ -5,55 +5,62 @@ import urllib.parse
 import os
 from app.extensions import supabase
 
+print(f"[DEBUG] auth.py imported. supabase object at import: {supabase}")
+
 auth_bp = Blueprint("auth_bp", __name__)
+
 
 @auth_bp.route("/login")
 def login():
-    """Redirects user to Supabase-hosted Google OAuth page using Authorization Code (PKCE) flow."""
-    if supabase is None:
+    """Redirects user to Supabase-hosted Google OAuth page."""
+    from app.extensions import supabase as sb  # fresh lookup
+    print(f"[DEBUG] /login accessed. Supabase client now: {sb}")
+
+    if sb is None:
         current_app.logger.error("Supabase client not initialized")
+        print("[DEBUG] ❌ Supabase client still None in /login")
         return "Internal configuration error: Supabase not initialized", 500
 
-    # ✅ Flask callback endpoint that will receive ?code=...
     redirect_uri = request.url_root.rstrip("/") + url_for("auth_bp.callback")
-
-    # ✅ Force Authorization Code + PKCE flow instead of implicit
     params = {
         "provider": "google",
         "redirect_to": redirect_uri,
-        "flow_type": "pkce",           # crucial: tells Supabase to return ?code=...
-        "response_type": "code",       # explicitly request code flow
+        "flow_type": "pkce",
+        "response_type": "code",
     }
 
     query = urllib.parse.urlencode(params)
     auth_url = f"{os.getenv('SUPABASE_URL')}/auth/v1/authorize?{query}"
 
-    current_app.logger.info(f"Redirecting to Supabase Auth: {auth_url}")
+    print(f"[DEBUG] Redirecting user to: {auth_url}")
     return redirect(auth_url)
 
 
 @auth_bp.route("/callback")
 def callback():
-    """Handles redirect from Supabase after successful OAuth login."""
     code = request.args.get("code")
+    print(f"[DEBUG] /callback hit. Code param: {code}")
+
+    from app.extensions import supabase as sb
+    print(f"[DEBUG] Supabase in callback: {sb}")
+
+    if sb is None:
+        print("[DEBUG] ❌ Supabase client still None in /callback")
+        return "Internal configuration error: Supabase not initialized", 500
+
     if not code:
         current_app.logger.error("❌ Missing OAuth code")
         return "Missing OAuth code", 400
 
-    if supabase is None:
-        current_app.logger.error("Supabase client not initialized")
-        return "Internal configuration error: Supabase not initialized", 500
-
     try:
-        # ✅ Exchange authorization code for a session
-        res = supabase.auth.exchange_code_for_session({"code": code})
+        res = sb.auth.exchange_code_for_session({"code": code})
         user = res.user
+        print(f"[DEBUG] Supabase exchange_code_for_session() returned user: {user}")
 
         if not user:
             current_app.logger.error("❌ No user returned from Supabase")
             return "Authentication failed", 400
 
-        # ✅ Store minimal user info in session
         session["user"] = {
             "id": user.id,
             "email": user.email,
@@ -62,16 +69,17 @@ def callback():
         }
 
         current_app.logger.info(f"✅ Login successful for {user.email}")
+        print(f"[DEBUG] ✅ Stored user session: {session['user']}")
         return redirect("/library")
 
     except Exception as e:
         current_app.logger.error(f"Auth callback failed: {e}")
+        print(f"[DEBUG] ❌ Auth callback failed with error: {e}")
         return f"Authentication error: {e}", 500
 
 
 @auth_bp.route("/logout")
 def logout():
-    """Clears user session."""
     session.clear()
-    current_app.logger.info("User logged out")
+    print("[DEBUG] Session cleared, user logged out.")
     return redirect("/")

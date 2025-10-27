@@ -27,3 +27,5 @@ okay great got basic search working! very exciting! Now gonna make sure it works
 Oct 27 update
 
 okay i am back. Started working on google auth on Oct 25th but didn't finish, so just gonna knock it out quickly today. A lot of tasks to handle in other aspects of life rn too.
+
+Still getting a lot of trouble with googla auth but want to finish it today.

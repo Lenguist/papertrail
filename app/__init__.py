@@ -4,43 +4,47 @@ import os
 from flask import Flask
 from dotenv import load_dotenv
 
-# Load environment variables from .env at project root
+print("[DEBUG] Importing app.__init__")
+
+# Load environment variables
 load_dotenv()
 
-# Import extensions and config
 from .extensions import db, init_supabase
 from .config import Config
 
-# Blueprints
+# Blueprints (importing these may cause early supabase references)
+print("[DEBUG] Importing Blueprints...")
 from .routes.main import main_bp
 from .routes.library import library_bp
 from .routes.auth import auth_bp
+print("[DEBUG] Blueprints imported successfully.")
 
 
 def create_app():
     """Flask application factory."""
+    print("[DEBUG] create_app() starting...")
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Verify environment variable loaded correctly (optional)
     db_url = os.getenv("DATABASE_URL")
-    if not db_url:
-        raise RuntimeError("❌ DATABASE_URL not found. Make sure .env is loaded correctly.")
-    else:
-        print(f"✅ Connected using DATABASE_URL: {db_url.split('@')[-1]}")
+    print(f"[DEBUG] DATABASE_URL present? {'yes' if db_url else 'no'}")
 
-    # Initialize core services
+    # Initialize extensions
     db.init_app(app)
-    init_supabase(app)  # <-- ensure Supabase client is ready before routes
+    print("[DEBUG] DB initialized.")
+
+    init_supabase(app)
+    print("[DEBUG] Supabase init called inside create_app()")
 
     # Register Blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(library_bp, url_prefix="/library")
     app.register_blueprint(auth_bp, url_prefix="/auth")
+    print("[DEBUG] Blueprints registered.")
 
-    # Health check route
     @app.route("/ping")
     def ping():
         return {"status": "ok"}
 
+    print("[DEBUG] create_app() done.")
     return app
