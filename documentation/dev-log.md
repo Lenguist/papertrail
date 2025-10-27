@@ -21,3 +21,9 @@ Oct 25 17:54 came back to work on this. Trying to test this very simple version 
 Rn hvaing some problems with supabase, once I figure them out and figure out railway i will be happy with my progress for the day.
 
 Yay! connected to supabase and created the tables. it was jjust a fat finger error on my part, i forgot to click the reset password button.
+
+okay great got basic search working! very exciting! Now gonna make sure it works with railway and then go eat.
+
+Oct 27 update
+
+okay i am back. Started working on google auth on Oct 25th but didn't finish, so just gonna knock it out quickly today. A lot of tasks to handle in other aspects of life rn too.

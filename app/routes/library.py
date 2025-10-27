@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+# app/routes/library.py
+
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from app.extensions import db
 from app.models.paper import Paper
 from app.models.user import User
@@ -7,9 +9,22 @@ from app.services.openalex import search_papers
 
 library_bp = Blueprint("library_bp", __name__)
 
+
 @library_bp.route("/", methods=["GET", "POST"])
 def library_home():
-    user = User.query.first()  # placeholder until auth is done
+    # ✅ Require user login
+    if "user" not in session:
+        return redirect(url_for("auth_bp.login"))
+
+    user_info = session["user"]
+    email = user_info.get("email")
+
+    # Find or create local user record
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        user = User(username=email.split("@")[0], email=email)
+        db.session.add(user)
+        db.session.commit()
 
     if request.method == "POST":
         title = request.form.get("title")
@@ -17,14 +32,14 @@ def library_home():
         doi = request.form.get("doi")
         url = request.form.get("url")
 
-        # check if paper already exists
+        # Check if paper already exists
         paper = Paper.query.filter_by(doi=doi).first()
         if not paper:
             paper = Paper(title=title, authors=authors, doi=doi, url=url, source="openalex")
             db.session.add(paper)
             db.session.commit()
 
-        # link user to paper
+        # Link user to paper
         link = UserPaper.query.filter_by(user_id=user.id, paper_id=paper.id).first()
         if not link:
             user_paper = UserPaper(user_id=user.id, paper_id=paper.id)
@@ -36,17 +51,14 @@ def library_home():
 
         return redirect(url_for("library_bp.library_home"))
 
-    # show saved papers
-    if user:
-        papers = (
-            db.session.query(Paper)
-            .join(UserPaper)
-            .filter(UserPaper.user_id == user.id)
-            .order_by(UserPaper.added_at.desc())
-            .all()
-        )
-    else:
-        papers = []
+    # Show saved papers
+    papers = (
+        db.session.query(Paper)
+        .join(UserPaper)
+        .filter(UserPaper.user_id == user.id)
+        .order_by(UserPaper.added_at.desc())
+        .all()
+    )
 
     return render_template("library.html", papers=papers)
 
