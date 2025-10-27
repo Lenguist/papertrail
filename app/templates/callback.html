@@ -1,0 +1,19 @@
+<!-- templates/callback.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OAuth Callback</title>
+</head>
+<body>
+  <p>Logging you in...</p>
+  <script>
+    const fragment = new URLSearchParams(window.location.hash.slice(1));
+    const token = fragment.get("access_token");
+    if (token) {
+      window.location.href = `/auth/login_success?access_token=${token}`;
+    } else {
+      document.body.innerText = "Access token not found in redirect.";
+    }
+  </script>
+</body>
+</html>

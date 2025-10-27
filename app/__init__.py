@@ -39,7 +39,8 @@ def create_app():
     # Register Blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(library_bp, url_prefix="/library")
-    app.register_blueprint(auth_bp, url_prefix="/auth")
+    # auth_bp already defines url_prefix="/auth"; don't duplicate here
+    app.register_blueprint(auth_bp)
     print("[DEBUG] Blueprints registered.")
 
     @app.route("/ping")

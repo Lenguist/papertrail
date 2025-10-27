@@ -16,5 +16,20 @@
   <main>
     {% block content %}{% endblock %}
   </main>
+  <script>
+    (function() {
+      // Fallback: if Supabase returns to "/" with tokens in the hash, forward to /auth/callback
+      try {
+        var atRoot = window.location.pathname === "/";
+        var hash = window.location.hash || "";
+        var hasToken = hash.indexOf("access_token=") !== -1;
+        if (atRoot && hasToken) {
+          window.location.replace("/auth/callback" + hash);
+        }
+      } catch (e) {
+        // no-op
+      }
+    })();
+  </script>
 </body>
 </html>

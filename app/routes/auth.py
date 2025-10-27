@@ -1,85 +1,47 @@
 # app/routes/auth.py
 
-from flask import Blueprint, redirect, request, session, current_app, url_for
-import urllib.parse
+from flask import Blueprint, redirect, request, render_template, current_app, session
 import os
-from app.extensions import supabase
+import urllib.parse
+import secrets
 
-print(f"[DEBUG] auth.py imported. supabase object at import: {supabase}")
-
-auth_bp = Blueprint("auth_bp", __name__)
-
+auth_bp = Blueprint("auth_bp", __name__, url_prefix="/auth")
 
 @auth_bp.route("/login")
 def login():
-    """Redirects user to Supabase-hosted Google OAuth page."""
-    from app.extensions import supabase as sb  # fresh lookup
-    print(f"[DEBUG] /login accessed. Supabase client now: {sb}")
+    # Important: make sure redirect_to matches exactly what you put in Supabase
+    redirect_uri = "http://127.0.0.1:5000/auth/callback"
 
-    if sb is None:
-        current_app.logger.error("Supabase client not initialized")
-        print("[DEBUG] ❌ Supabase client still None in /login")
-        return "Internal configuration error: Supabase not initialized", 500
-
-    redirect_uri = request.url_root.rstrip("/") + url_for("auth_bp.callback")
     params = {
         "provider": "google",
         "redirect_to": redirect_uri,
-        "flow_type": "pkce",
-        "response_type": "code",
     }
 
-    query = urllib.parse.urlencode(params)
-    auth_url = f"{os.getenv('SUPABASE_URL')}/auth/v1/authorize?{query}"
+    # Build Supabase authorize URL robustly from config or env
+    supabase_url = (current_app.config.get("SUPABASE_URL") or os.getenv("SUPABASE_URL") or "").rstrip("/")
+    if not supabase_url:
+        return "SUPABASE_URL is not configured", 500
 
-    print(f"[DEBUG] Redirecting user to: {auth_url}")
+    auth_url = f"{supabase_url}/auth/v1/authorize?{urllib.parse.urlencode(params)}"
+
+    # Helpful debug logging
+    print(f"[AUTH] authorize_url={auth_url}")
+
     return redirect(auth_url)
-
 
 @auth_bp.route("/callback")
 def callback():
-    code = request.args.get("code")
-    print(f"[DEBUG] /callback hit. Code param: {code}")
+    # Client-side will parse the token and redirect to login_success
+    return render_template("callback.html")
 
-    from app.extensions import supabase as sb
-    print(f"[DEBUG] Supabase in callback: {sb}")
-
-    if sb is None:
-        print("[DEBUG] ❌ Supabase client still None in /callback")
-        return "Internal configuration error: Supabase not initialized", 500
-
-    if not code:
-        current_app.logger.error("❌ Missing OAuth code")
-        return "Missing OAuth code", 400
+@auth_bp.route("/login_success")
+def login_success():
+    access_token = request.args.get("access_token")
+    if not access_token:
+        return "Missing access token", 400
 
     try:
-        res = sb.auth.exchange_code_for_session({"code": code})
-        user = res.user
-        print(f"[DEBUG] Supabase exchange_code_for_session() returned user: {user}")
-
-        if not user:
-            current_app.logger.error("❌ No user returned from Supabase")
-            return "Authentication failed", 400
-
-        session["user"] = {
-            "id": user.id,
-            "email": user.email,
-            "name": getattr(user, "user_metadata", {}).get("full_name", ""),
-            "avatar_url": getattr(user, "user_metadata", {}).get("avatar_url", ""),
-        }
-
-        current_app.logger.info(f"✅ Login successful for {user.email}")
-        print(f"[DEBUG] ✅ Stored user session: {session['user']}")
-        return redirect("/library")
-
+        user = current_app.supabase.auth.get_user(access_token)
+        return f"Hello, {user.user.email}"
     except Exception as e:
-        current_app.logger.error(f"Auth callback failed: {e}")
-        print(f"[DEBUG] ❌ Auth callback failed with error: {e}")
-        return f"Authentication error: {e}", 500
-
-
-@auth_bp.route("/logout")
-def logout():
-    session.clear()
-    print("[DEBUG] Session cleared, user logged out.")
-    return redirect("/")
+        return f"Failed to get user info: {e}", 500
